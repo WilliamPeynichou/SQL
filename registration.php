@@ -1,18 +1,46 @@
 <?php
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
-    $name = $_POST['name'];
-    $email = $_POST['email'];
-    $password = $_POST['password'];
-    $confirm_password = $_POST['confirm_password'];
+    // Nettoyage et sécurisation des entrées
+    $name = isset($_POST['name']) ? htmlspecialchars(trim($_POST['name'])) : '';
+    $email = isset($_POST['email']) ? htmlspecialchars(trim($_POST['email'])) : '';
+    $password = isset($_POST['password']) ? $_POST['password'] : '';
+    $confirm_password = isset($_POST['confirm_password']) ? $_POST['confirm_password'] : '';
 
-    if($password == $confirm_password){
-        // echo "Password and confirm password are the same";
-    }else{
-        // echo "Password and confirm password are not the same";
+    $errors = [];
+    
+    if(empty($name)) {
+        $errors[] = 'Le nom est requis.';
+    } elseif(strlen($name) < 2) {
+        $errors[] = 'Le nom doit contenir au moins 2 caractères.';
+    }
+    
+    if(empty($email)) {
+        $errors[] = 'L\'email est requis.';
+    } elseif(!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = 'Veuillez saisir une adresse email valide.';
+    }
+    
+    if(empty($password)) {
+        $errors[] = 'Le mot de passe est requis.';
+    } elseif(strlen($password) < 6) {
+        $errors[] = 'Le mot de passe doit contenir au moins 6 caractères.';
+    } elseif(strlen($password) < 8) {
+        $errors[] = 'Pour plus de sécurité, utilisez au moins 8 caractères.';
+    }
+    
+    if(empty($confirm_password)) {
+        $errors[] = 'La confirmation du mot de passe est requise.';
+    } elseif($password !== $confirm_password) {
+        $errors[] = 'Les mots de passe ne correspondent pas.';
+    }
+    
+    // Si aucune erreur, traitement réussi
+    if(empty($errors)) {
+        // Ici tu peux ajouter le code pour sauvegarder en base de données
+        $success_message = "Inscription réussie !";
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="FR">
 <head>
