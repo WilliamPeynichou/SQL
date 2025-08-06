@@ -49,6 +49,20 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         // (car la condition précédente a déjà vérifié qu'il fait au moins 6 caractères)
         // C'est un avertissement pour encourager l'utilisateur à utiliser un mot de passe plus fort
         $errors[] = "Pour plus de sécurité, utilisez au moins 8 caractères.";
+    } elseif(!preg_match("/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/", $password)) {
+        // preg_match() : Fonction PHP qui teste si une chaîne correspond à un pattern regex
+        // Premier paramètre : le pattern regex entre délimiteurs "/"
+        // Deuxième paramètre : la chaîne à tester ($password)
+        // Retourne true si la chaîne correspond au pattern, false sinon
+        // Regex pour valider la complexité du mot de passe :
+        // ^ : début de la chaîne
+        // (?=.*[a-z]) : au moins une lettre minuscule
+        // (?=.*[A-Z]) : au moins une lettre majuscule  
+        // (?=.*\d) : au moins un chiffre
+        // (?=.*[@$!%*?&]) : au moins un caractère spécial
+        // [A-Za-z\d@$!%*?&]{8,} : 8 caractères minimum, uniquement les caractères autorisés
+        // $ : fin de la chaîne
+        $errors[] = "Le mot de passe doit contenir au moins 8 caractères avec une minuscule, une majuscule, un chiffre et un caractère spécial.";
     }
     
     // VALIDATION DE LA CONFIRMATION DU MOT DE PASSE
