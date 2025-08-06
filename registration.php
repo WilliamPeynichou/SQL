@@ -1,86 +1,73 @@
 <?php
-// Vérification si le formulaire a été soumis via la méthode POST
-// $_SERVER["REQUEST_METHOD"] : Variable superglobale qui contient la méthode HTTP utilisée
+// ===== DÉBUT DU TRAITEMENT PHP =====
+
+// On vérifie si le formulaire a été envoyé (quand l'utilisateur clique sur "Envoyé")
+// $_SERVER["REQUEST_METHOD"] contient la méthode utilisée (GET ou POST)
 if($_SERVER["REQUEST_METHOD"] === "POST"){
     
-    // NETTOYAGE ET SÉCURISATION DES DONNÉES
-    // isset() : Vérifie si une variable existe et n"est pas null
-    // $_POST : Variable superglobale contenant les données envoyées par POST
-    // htmlspecialchars() : Convertit les caractères spéciaux en entités HTML (protection XSS)
-    // trim() : Supprime les espaces au début et à la fin d"une chaîne
+    // ===== RÉCUPÉRATION ET NETTOYAGE DES DONNÉES =====
+    // On récupère les données du formulaire et on les nettoie
+    
+    // isset() vérifie si le champ existe dans le formulaire
+    // htmlspecialchars() protège contre les attaques en convertissant les caractères spéciaux
+    // trim() enlève les espaces au début et à la fin
     $name = isset($_POST["name"]) ? htmlspecialchars(trim($_POST["name"])) : "";
     $email = isset($_POST["email"]) ? htmlspecialchars(trim($_POST["email"])) : "";
     $password = isset($_POST["password"]) ? $_POST["password"] : "";
     $confirm_password = isset($_POST["confirm_password"]) ? $_POST["confirm_password"] : "";
 
-    // Initialisation du tableau d"erreurs
+    // On crée un tableau vide pour stocker les erreurs
     $errors = [];
     
-    // VALIDATION DU NOM
-    // empty() : Vérifie si une variable est vide (null, "", 0, false, array vide)
+    // ===== VALIDATION DU NOM =====
+    // empty() vérifie si la variable est vide
     if(empty($name)) {
         $errors[] = "Le nom est requis.";
     } elseif(strlen($name) < 2) {
-        // strlen() : Retourne la longueur d"une chaîne de caractères
+        // strlen() compte le nombre de caractères
         $errors[] = "Le nom doit contenir au moins 2 caractères.";
     }
     
-    // VALIDATION DE L"EMAIL
+    // ===== VALIDATION DE L'EMAIL =====
     if(empty($email)) {
         $errors[] = "L'email est requis.";
     } elseif(!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        // filter_var() : Filtre une variable avec un filtre spécifique
-        // FILTER_VALIDATE_EMAIL : Constante pour valider le format d"un email
-        // ! : Opérateur de négation (inverse le résultat)
+        // filter_var() avec FILTER_VALIDATE_EMAIL vérifie si c'est un email valide
+        // Le ! inverse le résultat (si l'email est invalide, on ajoute une erreur)
         $errors[] = "Veuillez saisir une adresse email valide.";
     }
     
-    // VALIDATION DU MOT DE PASSE
-    // Première vérification : le mot de passe est-il vide ?
+    // ===== VALIDATION DU MOT DE PASSE =====
     if(empty($password)) {
         $errors[] = "Le mot de passe est requis.";
     } elseif(strlen($password) < 6) {
-        // strlen() : Fonction native PHP qui compte le nombre de caractères dans une chaîne
-        // Exemple : strlen("abc123") = 6, strlen("test") = 4
-        // Cette condition vérifie si le mot de passe fait moins de 6 caractères
         $errors[] = "Le mot de passe doit contenir au moins 6 caractères.";
     } elseif(strlen($password) < 8) {
         // Cette condition ne s'exécute que si le mot de passe fait 6 ou 7 caractères
-        // (car la condition précédente a déjà vérifié qu'il fait au moins 6 caractères)
-        // C'est un avertissement pour encourager l'utilisateur à utiliser un mot de passe plus fort
         $errors[] = "Pour plus de sécurité, utilisez au moins 8 caractères.";
     } elseif(!preg_match("/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/", $password)) {
-        // preg_match() : Fonction PHP qui teste si une chaîne correspond à un pattern regex
-        // Premier paramètre : le pattern regex entre délimiteurs "/"
-        // Deuxième paramètre : la chaîne à tester ($password)
-        // Retourne true si la chaîne correspond au pattern, false sinon
-        // Regex pour valider la complexité du mot de passe :
-        // ^ : début de la chaîne
-        // (?=.*[a-z]) : au moins une lettre minuscule
-        // (?=.*[A-Z]) : au moins une lettre majuscule  
-        // (?=.*\d) : au moins un chiffre
-        // (?=.*[@$!%*?&]) : au moins un caractère spécial
-        // [A-Za-z\d@$!%*?&]{8,} : 8 caractères minimum, uniquement les caractères autorisés
-        // $ : fin de la chaîne
+        // preg_match() teste si le mot de passe respecte le pattern regex
+        // Le regex vérifie qu'il y a au moins :
+        // - une minuscule (?=.*[a-z])
+        // - une majuscule (?=.*[A-Z])  
+        // - un chiffre (?=.*\d)
+        // - un caractère spécial (?=.*[@$!%*?&])
+        // - 8 caractères minimum {8,}
         $errors[] = "Le mot de passe doit contenir au moins 8 caractères avec une minuscule, une majuscule, un chiffre et un caractère spécial.";
     }
     
-    // VALIDATION DE LA CONFIRMATION DU MOT DE PASSE
-    // Vérification : la confirmation du mot de passe est-elle vide ?
+    // ===== VALIDATION DE LA CONFIRMATION =====
     if(empty($confirm_password)) {
         $errors[] = "La confirmation du mot de passe est requise.";
     } elseif($password !== $confirm_password) {
-        // !== : Opérateur de comparaison stricte (valeur ET type)
-        // Vérifie si les deux mots de passe sont identiques
-        // Exemple : "password123" !== "password123" = false (même valeur)
-        // Exemple : "password123" !== "Password123" = true (différent)
+        // !== compare si les deux mots de passe sont différents
         $errors[] = "Les mots de passe ne correspondent pas.";
     }
     
-    // TRAITEMENT EN CAS DE SUCCÈS
-    // Si aucune erreur n"a été ajoutée au tableau
+    // ===== TRAITEMENT FINAL =====
+    // Si aucune erreur n'a été trouvée
     if(empty($errors)) {
-        // Ici tu peux ajouter le code pour sauvegarder en base de données
+        // Ici on pourrait sauvegarder en base de données
         $success_message = "Inscription réussie !";
     }
 }
