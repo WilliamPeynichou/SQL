@@ -1,10 +1,11 @@
 <?php
 // ===== DÉBUT DU TRAITEMENT PHP =====
+require_once "config/database.php";
 
 // On vérifie si le formulaire a été envoyé (quand l'utilisateur clique sur "Envoyé")
 // $_SERVER["REQUEST_METHOD"] contient la méthode utilisée (GET ou POST)
 if($_SERVER["REQUEST_METHOD"] === "POST"){
-    
+
     // ===== RÉCUPÉRATION ET NETTOYAGE DES DONNÉES =====
     // On récupère les données du formulaire et on les nettoie
     

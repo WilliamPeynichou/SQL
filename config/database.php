@@ -7,7 +7,7 @@ $host = "localhost";
 
 // nom de la database
 // Nom de la base de données à laquelle se connecter
-$db_name = "users";
+$db_name = "tableuser";
 
 // nom d'utilisateur
 // Nom d'utilisateur pour la connexion à la base de données
@@ -36,15 +36,30 @@ function createConnection(){
         $dsn = "mysql:host=$host;dbname=$db_name;port=$port;charset=$charset;port=$port";
         // On crée un nouvel objet PDO pour établir la connexion à la base de données
         $pdo = new PDO($dsn, $username, $password);
-        // Ici, on pourrait vérifier la connexion, mais PDO lance déjà une exception en cas d'échec
-        // (La condition suivante est incorrecte, mais gardée pour l'exemple pédagogique)
-        if($dsn->connect_error){
-            // Si une erreur de connexion est détectée, on lance une exception personnalisée
-            throw new Exception("Connection failed: " . $dsn->connect_error);
-        }
-    } catch (Exception $e) {
+        // On configure PDO pour lancer des exceptions en cas d'erreur
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        // On configure PDO pour que les résultats soient retournés sous forme de tableaux associatifs
+        $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+        // On retourne l'objet PDO pour que d'autres parties du code puissent l'utiliser
+        return $pdo;
+        // ... (aucune vérification supplémentaire nécessaire, PDO gère les erreurs via les exceptions)
+    } catch (PDOException $e) {
         // Le bloc catch permet d'attraper et de gérer les erreurs survenues dans le try
+        // $e est un objet représentant l'exception levée lors d'une erreur de connexion ou d'exécution PDO
+        // $e->getMessage() retourne une description textuelle de l'erreur qui s'est produite
         // Ici, on affiche le message d'erreur et on arrête le script
-        die($e->getMessage());
+        die("Erreur de connexion : " . $e->getMessage());
     }
+};
+
+// creer la connexion
+$connection = createConnection();
+
+// verifier la connexion
+if($connection){
+    echo "Connexion réussie";
+} else {
+    echo "Connexion échouée";
 }
+
+
