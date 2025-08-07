@@ -1,6 +1,6 @@
 <?php
 // ===== DÉBUT DU TRAITEMENT PHP =====
-require_once "config/database.php";
+    require_once "config/database.php";
 
 // Initialisation des variables pour l'affichage
 $errors = [];
