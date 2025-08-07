@@ -68,8 +68,22 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
     // ===== TRAITEMENT FINAL =====
     // Si aucune erreur n'a été trouvée
     if(empty($errors)) {
-        // Ici on pourrait sauvegarder en base de données
-        $success_message = "Inscription réussie !";
+        // On établit la connexion à la base de données et on récupère l'objet PDO
+        $pdo = createConnection();
+
+        // On prépare une requête SQL pour vérifier si l'email existe déjà dans la table 'users'
+        // L'utilisation de prepare() permet d'éviter les injections SQL
+        $checkEmail = $pdo->prepare("SELECT id FROM users WHERE email= ?");
+
+        // On exécute la requête préparée en passant la valeur de l'email dans un tableau
+        // Cela remplace le ? dans la requête par la valeur de $email de façon sécurisée
+        $checkEmail->execute([$email]);
+        if ($checkEmail->rowCount() > 0)
+        $errors[] = "email deja validé"
+    }else{
+        $hashPassword = password_hash($password, PASSWORD_DEFAULT);
+
+        var_dump($hashPassword);
     }
 }
 ?>
