@@ -1,47 +1,81 @@
 <?php
+// Importe le fichier de configuration pour la connexion à la base de données (nécessaire pour utiliser la fonction createConnection)
 require_once "config/database.php";
-
+// Démarre une session PHP pour stocker les informations de l'utilisateur connecté
+session_start();
+// Initialise un tableau vide pour stocker les messages d'erreur
 $errors = [];
+// Initialise une variable pour stocker un éventuel message de succès
 $message = "";
 
+// Vérifie si le formulaire a été soumis en méthode POST (c'est-à-dire si l'utilisateur a cliqué sur "Se connecter")
 if($_SERVER["REQUEST_METHOD"] === "POST"){
     // ===== RÉCUPÉRATION ET NETTOYAGE DES DONNÉES =====
+    // Récupère la valeur du champ email du formulaire, enlève les espaces inutiles (trim) et convertit les caractères spéciaux en entités HTML (htmlspecialchars) pour éviter les failles XSS
     $email = isset($_POST["email"]) ? htmlspecialchars(trim($_POST["email"])) : "";
+    // Récupère la valeur du champ mot de passe du formulaire, sans nettoyage car il sera vérifié et hashé
     $password = isset($_POST["password"]) ? $_POST["password"] : "";
 
     // ===== VALIDATION DE L'EMAIL =====
+    // Vérifie si le champ email est vide
     if(empty($email)) {
+        // Ajoute un message d'erreur si l'email est vide
         $errors[] = "L'email est requis.";
+    // Vérifie si l'email n'a pas un format valide grâce à la fonction native filter_var avec le filtre FILTER_VALIDATE_EMAIL
     } elseif(!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        // Ajoute un message d'erreur si l'email n'est pas valide
         $errors[] = "Veuillez saisir une adresse email valide.";
     }
 
     // ===== VALIDATION DU MOT DE PASSE =====
+    // Vérifie si le champ mot de passe est vide
     if(empty($password)) {
+        // Ajoute un message d'erreur si le mot de passe est vide
         $errors[] = "Le mot de passe est requis.";
+    // Vérifie si la longueur du mot de passe est inférieure à 8 caractères avec la fonction native strlen
     } elseif(strlen($password) < 8) {
+        // Ajoute un message d'erreur si le mot de passe est trop court
         $errors[] = "Le mot de passe doit contenir au moins 8 caractères.";
     }
 
+    // Si le tableau $errors est vide, on continue le traitement (aucune erreur de validation)
     if (empty($errors)){
+        // On utilise un bloc try/catch pour gérer les exceptions (erreurs inattendues) lors de la connexion à la base ou de l'exécution SQL
         try {
             // Connexion à la base de données
             $pdo = createConnection();
-
-            // Recherche de l'utilisateur par email
-            $userEmail = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+            // Recherche de l'utilisateur par email avec tous les champs nécessaires
+            $userEmail = $pdo->prepare("SELECT id, name, email, password FROM users WHERE email = ?");
+            // Exécute la requête préparée en liant la valeur de $email au paramètre ?
             $userEmail->execute([$email]);
+            // Récupère la première ligne de résultat sous forme de tableau associatif (ou false si aucun résultat). La méthode fetch() est native à PDOStatement
             $user = $userEmail->fetch();
+
             if ($user) {
-                if(password_verify($password, $user["password"])){
-                    $message = "Connexion réussie !";
+                // Vérifie si le mot de passe fourni correspond au hash stocké en base grâce à la fonction native password_verify
+                if (password_verify($password, $user["password"])) {
+                    // Stocke les informations de l'utilisateur dans la session PHP
+                    $_SESSION["user_id"] = $user['id'];
+                    $_SESSION["username"] = $user['name'];
+                    $_SESSION["email"] = $user['email'];
+                    $_SESSION['login'] = true;
+
+                    // Prépare un message de succès avec le nom de l'utilisateur
+                    $message = "Super, vous êtes connecté " . htmlspecialchars($user['name']);
+                    // Redirige vers la page d'accueil après connexion réussie
+                    header('Location: home.php');
+                    exit();
                 } else {
+                    // Si le mot de passe ne correspond pas, on ajoute une erreur
                     $errors[] = "Mot de passe incorrect.";
-                }
+                }     
             } else {
+                // Si aucun utilisateur n'a été trouvé, on ajoute une erreur
                 $errors[] = "Aucun compte associé à cet email.";
-            }
+            }  
+        // Si une exception de type PDOException est levée (erreur de base de données), on la capture ici
         } catch (PDOException $e) {
+            // On ajoute le message d'erreur détaillé à la liste des erreurs
             $errors[] = "Erreur base de données : " . $e->getMessage();
         }
     }
