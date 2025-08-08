@@ -8,7 +8,16 @@ if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
     exit();
 }
 
+// if (!isset($_GET['logout']) && $_GET['logout'] === '1'){
+//     $_SESSION = [];
+//     session_destroy();
+
+//     header('location : login.php');
+
+//     exit();
+// }
 // Récupération sécurisée des informations utilisateur depuis la session
+$user_id = $_SESSION['user_id'] ??'inconnu';
 $username = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'Utilisateur';
 $email = isset($_SESSION['email']) ? htmlspecialchars($_SESSION['email']) : '';
 ?>
