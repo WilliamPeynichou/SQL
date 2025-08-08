@@ -124,3 +124,24 @@ h1 {
         border-radius: 8px;
     }
 }
+
+
+/* Accentue le titre pour l'accueil */
+.welcome-title {
+     font-size: 2rem; margin-bottom: 8px; 
+    }
+.subtitle { 
+    text-align: center; color: #555; margin: 0 0 10px; 
+}
+.actions { 
+    display: flex; justify-content: center; gap: 10px; margin-top: 18px; 
+}
+.link-btn { 
+    display: inline-block; 
+    padding: 10px 14px; 
+    border-radius: 10px; 
+    background: linear-gradient(90deg, #0071e3 0%, #2997ff 100%); 
+    color: #fff; text-decoration: none;
+    font-weight: 600; 
+    box-shadow: 0 2px 8px rgba(0,113,227,0.08);
+}

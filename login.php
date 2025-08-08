@@ -3,6 +3,11 @@
 require_once "config/database.php";
 // Démarre une session PHP pour stocker les informations de l'utilisateur connecté
 session_start();
+// Si l'utilisateur est déjà connecté, on le redirige vers l'accueil
+if (isset($_SESSION['login']) && $_SESSION['login'] === true) {
+    header('Location: home.php');
+    exit();
+}
 // Initialise un tableau vide pour stocker les messages d'erreur
 $errors = [];
 // Initialise une variable pour stocker un éventuel message de succès
